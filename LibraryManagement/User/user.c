@@ -43,19 +43,67 @@ void
 user_init(user_list_t* list) {
     if (list != NULL) {
         list->count = 0;
+        list->next_id = 1;
         memset(list->users, 0, sizeof(list->users));
     }
 }
 
 /**
- * \brief           Thêm người dùng mới vào danh sách
+ * \brief           Thêm người dùng mới vào danh sách với ID tự động
+ * \param[in,out]   list: Con trỏ tới danh sách người dùng
+ * \param[in]       name: Tên người dùng
+ * \param[out]      assigned_id: Con trỏ để lưu ID đã được gán (có thể NULL)
+ * \return          \ref USER_OK nếu thành công, \ref user_status_t nếu lỗi
+ */
+user_status_t
+user_add(user_list_t* list, const char* name, uint32_t* assigned_id) {
+    uint32_t new_id;
+
+    if (list == NULL || name == NULL) {
+        return USER_INVALID_INPUT;
+    }
+
+    /* Kiểm tra chuỗi rỗng */
+    if (is_string_empty(name)) {
+        return USER_INVALID_INPUT;
+    }
+
+    /* Kiểm tra danh sách đã đầy */
+    if (list->count >= MAX_USERS) {
+        return USER_FULL;
+    }
+
+    /* Tạo ID mới */
+    new_id = list->next_id;
+
+    /* Thêm người dùng mới */
+    user_t* new_user = &list->users[list->count];
+    new_user->user_id = new_id;
+    strncpy(new_user->name, name, MAX_NAME_LENGTH - 1);
+    new_user->name[MAX_NAME_LENGTH - 1] = '\0';
+    new_user->borrowed_count = 0;
+    memset(new_user->borrowed_books, 0, sizeof(new_user->borrowed_books));
+
+    list->count++;
+    list->next_id++;
+
+    /* Trả về ID đã được gán nếu có yêu cầu */
+    if (assigned_id != NULL) {
+        *assigned_id = new_id;
+    }
+
+    return USER_OK;
+}
+
+/**
+ * \brief           Thêm người dùng mới vào danh sách với ID chỉ định (dùng cho backward compatibility)
  * \param[in,out]   list: Con trỏ tới danh sách người dùng
  * \param[in]       user_id: ID của người dùng
  * \param[in]       name: Tên người dùng
  * \return          \ref USER_OK nếu thành công, \ref user_status_t nếu lỗi
  */
 user_status_t
-user_add(user_list_t* list, uint32_t user_id, const char* name) {
+user_add_with_id(user_list_t* list, uint32_t user_id, const char* name) {
     if (list == NULL || name == NULL) {
         return USER_INVALID_INPUT;
     }
@@ -89,6 +137,12 @@ user_add(user_list_t* list, uint32_t user_id, const char* name) {
     memset(new_user->borrowed_books, 0, sizeof(new_user->borrowed_books));
 
     list->count++;
+
+    /* Cập nhật next_id nếu cần */
+    if (user_id >= list->next_id) {
+        list->next_id = user_id + 1;
+    }
+
     return USER_OK;
 }
 

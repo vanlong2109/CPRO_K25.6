@@ -78,11 +78,13 @@ typedef struct {
 typedef struct {
     user_t users[MAX_USERS];                    /*!< Mảng chứa các người dùng */
     size_t count;                               /*!< Số lượng người dùng hiện tại */
+    uint32_t next_id;                           /*!< ID tiếp theo sẽ được gán */
 } user_list_t;
 
 /* Khai báo các hàm quản lý người dùng */
 void            user_init(user_list_t* list);
-user_status_t   user_add(user_list_t* list, uint32_t user_id, const char* name);
+user_status_t   user_add(user_list_t* list, const char* name, uint32_t* assigned_id);
+user_status_t   user_add_with_id(user_list_t* list, uint32_t user_id, const char* name);
 user_status_t   user_update(user_list_t* list, uint32_t user_id, const char* name);
 user_status_t   user_delete(user_list_t* list, uint32_t user_id);
 user_t*         user_find_by_id(user_list_t* list, uint32_t user_id);

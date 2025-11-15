@@ -372,7 +372,7 @@ handle_statistics_menu(library_t* library) {
  */
 static void
 add_book_interactive(book_list_t* books) {
-    uint32_t book_id;
+    uint32_t assigned_id;
     char title[MAX_TITLE_LENGTH];
     char author[MAX_AUTHOR_LENGTH];
     utils_status_t status;
@@ -381,16 +381,8 @@ add_book_interactive(book_list_t* books) {
     clear_screen();
     print_header("THÊM SÁCH MỚI");
 
-    /* Nhập ID sách */
-    status = read_uint(&book_id, "\n  Nhập ID sách: ");
-    if (status != UTILS_OK) {
-        printf("\n  Lỗi: ID không hợp lệ!\n");
-        pause_screen();
-        return;
-    }
-
     /* Nhập tiêu đề */
-    status = read_string(title, MAX_TITLE_LENGTH, "  Nhập tiêu đề sách: ");
+    status = read_string(title, MAX_TITLE_LENGTH, "\n  Nhập tiêu đề sách: ");
     if (status != UTILS_OK) {
         printf("\n  Lỗi: Tiêu đề không hợp lệ!\n");
         pause_screen();
@@ -405,14 +397,11 @@ add_book_interactive(book_list_t* books) {
         return;
     }
 
-    /* Thêm sách */
-    book_status = book_add(books, book_id, title, author);
+    /* Thêm sách với ID tự động */
+    book_status = book_add(books, title, author, &assigned_id);
     switch (book_status) {
         case BOOK_OK:
-            printf("\n  Thành công: Đã thêm sách mới!\n");
-            break;
-        case BOOK_ALREADY_EXISTS:
-            printf("\n  Lỗi: Sách với ID %u đã tồn tại!\n", book_id);
+            printf("\n  Thành công: Đã thêm sách mới với ID: %u\n", assigned_id);
             break;
         case BOOK_FULL:
             printf("\n  Lỗi: Danh sách sách đã đầy!\n");
@@ -528,7 +517,7 @@ delete_book_interactive(book_list_t* books) {
  */
 static void
 add_user_interactive(user_list_t* users) {
-    uint32_t user_id;
+    uint32_t assigned_id;
     char name[MAX_NAME_LENGTH];
     utils_status_t status;
     user_status_t user_status;
@@ -536,30 +525,19 @@ add_user_interactive(user_list_t* users) {
     clear_screen();
     print_header("THÊM NGƯỜI DÙNG MỚI");
 
-    /* Nhập ID người dùng */
-    status = read_uint(&user_id, "\n  Nhập ID người dùng: ");
-    if (status != UTILS_OK) {
-        printf("\n  Lỗi: ID không hợp lệ!\n");
-        pause_screen();
-        return;
-    }
-
     /* Nhập tên */
-    status = read_string(name, MAX_NAME_LENGTH, "  Nhập tên người dùng: ");
+    status = read_string(name, MAX_NAME_LENGTH, "\n  Nhập tên người dùng: ");
     if (status != UTILS_OK) {
         printf("\n  Lỗi: Tên không hợp lệ!\n");
         pause_screen();
         return;
     }
 
-    /* Thêm người dùng */
-    user_status = user_add(users, user_id, name);
+    /* Thêm người dùng với ID tự động */
+    user_status = user_add(users, name, &assigned_id);
     switch (user_status) {
         case USER_OK:
-            printf("\n  Thành công: Đã thêm người dùng mới!\n");
-            break;
-        case USER_ALREADY_EXISTS:
-            printf("\n  Lỗi: Người dùng với ID %u đã tồn tại!\n", user_id);
+            printf("\n  Thành công: Đã thêm người dùng mới với ID: %u\n", assigned_id);
             break;
         case USER_FULL:
             printf("\n  Lỗi: Danh sách người dùng đã đầy!\n");

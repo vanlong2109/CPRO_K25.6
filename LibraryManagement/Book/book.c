@@ -43,12 +43,62 @@ void
 book_init(book_list_t* list) {
     if (list != NULL) {
         list->count = 0;
+        list->next_id = 1;
         memset(list->books, 0, sizeof(list->books));
     }
 }
 
 /**
- * \brief           Thêm sách mới vào danh sách
+ * \brief           Thêm sách mới vào danh sách với ID tự động
+ * \param[in,out]   list: Con trỏ tới danh sách sách
+ * \param[in]       title: Tiêu đề sách
+ * \param[in]       author: Tác giả
+ * \param[out]      assigned_id: Con trỏ để lưu ID đã được gán (có thể NULL)
+ * \return          \ref BOOK_OK nếu thành công, \ref book_status_t nếu lỗi
+ */
+book_status_t
+book_add(book_list_t* list, const char* title, const char* author, uint32_t* assigned_id) {
+    uint32_t new_id;
+
+    if (list == NULL || title == NULL || author == NULL) {
+        return BOOK_INVALID_INPUT;
+    }
+
+    /* Kiểm tra chuỗi rỗng */
+    if (is_string_empty(title) || is_string_empty(author)) {
+        return BOOK_INVALID_INPUT;
+    }
+
+    /* Kiểm tra danh sách đã đầy */
+    if (list->count >= MAX_BOOKS) {
+        return BOOK_FULL;
+    }
+
+    /* Tạo ID mới */
+    new_id = list->next_id;
+
+    /* Thêm sách mới */
+    book_t* new_book = &list->books[list->count];
+    new_book->book_id = new_id;
+    strncpy(new_book->title, title, MAX_TITLE_LENGTH - 1);
+    new_book->title[MAX_TITLE_LENGTH - 1] = '\0';
+    strncpy(new_book->author, author, MAX_AUTHOR_LENGTH - 1);
+    new_book->author[MAX_AUTHOR_LENGTH - 1] = '\0';
+    new_book->is_borrowed = 0;
+
+    list->count++;
+    list->next_id++;
+
+    /* Trả về ID đã được gán nếu có yêu cầu */
+    if (assigned_id != NULL) {
+        *assigned_id = new_id;
+    }
+
+    return BOOK_OK;
+}
+
+/**
+ * \brief           Thêm sách mới vào danh sách với ID chỉ định (dùng cho backward compatibility)
  * \param[in,out]   list: Con trỏ tới danh sách sách
  * \param[in]       book_id: ID của sách
  * \param[in]       title: Tiêu đề sách
@@ -56,7 +106,7 @@ book_init(book_list_t* list) {
  * \return          \ref BOOK_OK nếu thành công, \ref book_status_t nếu lỗi
  */
 book_status_t
-book_add(book_list_t* list, uint32_t book_id, const char* title, const char* author) {
+book_add_with_id(book_list_t* list, uint32_t book_id, const char* title, const char* author) {
     if (list == NULL || title == NULL || author == NULL) {
         return BOOK_INVALID_INPUT;
     }
@@ -91,6 +141,12 @@ book_add(book_list_t* list, uint32_t book_id, const char* title, const char* aut
     new_book->is_borrowed = 0;
 
     list->count++;
+
+    /* Cập nhật next_id nếu cần */
+    if (book_id >= list->next_id) {
+        list->next_id = book_id + 1;
+    }
+
     return BOOK_OK;
 }
 

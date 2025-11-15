@@ -77,11 +77,13 @@ typedef struct {
 typedef struct {
     book_t books[MAX_BOOKS];                    /*!< Mảng chứa các sách */
     size_t count;                               /*!< Số lượng sách hiện tại */
+    uint32_t next_id;                           /*!< ID tiếp theo sẽ được gán */
 } book_list_t;
 
 /* Khai báo các hàm quản lý sách */
 void            book_init(book_list_t* list);
-book_status_t   book_add(book_list_t* list, uint32_t book_id, const char* title, const char* author);
+book_status_t   book_add(book_list_t* list, const char* title, const char* author, uint32_t* assigned_id);
+book_status_t   book_add_with_id(book_list_t* list, uint32_t book_id, const char* title, const char* author);
 book_status_t   book_update(book_list_t* list, uint32_t book_id, const char* title, const char* author);
 book_status_t   book_delete(book_list_t* list, uint32_t book_id);
 book_t*         book_find_by_id(book_list_t* list, uint32_t book_id);
