@@ -1,0 +1,13 @@
+# Ignore build artifacts and local binaries
+# LibraryManagement output folders
+LibraryManagement/build/
+LibraryManagement/bin/
+
+# Generic build/bin ignores
+build/
+bin/
+
+# Object files and executables
+*.o
+*.exe
+*.out
